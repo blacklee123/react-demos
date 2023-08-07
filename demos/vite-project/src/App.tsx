@@ -1,33 +1,38 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { Suspense, useMemo } from 'react'
+import { RouterProvider, createBrowserRouter } from 'react-router-dom'
+import { getAuthRouters } from 'react-router-auth-plus'
+import { ConfigProvider, Spin } from 'antd'
+import zhCN from 'antd/locale/zh_CN'
+import { useGlobalStore } from '@/stores'
+import routers from './router'
 
-function App() {
-  const [count, setCount] = useState<number>(0)
+const App = () => {
+  const { primaryColor } = useGlobalStore()
+  const auth = ['home']
+  const _routers = useMemo(() => {
+    const result = getAuthRouters({
+      routers,
+      noAuthElement: (router) => <h1>no auth</h1>,
+      render: (element) => element,
+      auth: auth || [],
+    })
 
+    return result
+  }, [auth])
   return (
     <>
-      <div>
-        <a href='https://vitejs.dev' target='_blank'>
-          <img src={viteLogo} className='logo' alt='Vite logo' />
-        </a>
-        <a href='https://react.dev' target='_blank'>
-          <img src={reactLogo} className='logo react' alt='React logo' />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className='card'>
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className='read-the-docs'>
-        Click on the Vite and React logos to learn more
-      </p>
+      <ConfigProvider
+        locale={zhCN}
+        theme={{
+          token: {
+            colorPrimary: primaryColor,
+          },
+        }}
+      >
+        <Suspense fallback={<Spin />}>
+          <RouterProvider router={createBrowserRouter(_routers)} />
+        </Suspense>
+      </ConfigProvider>
     </>
   )
 }
